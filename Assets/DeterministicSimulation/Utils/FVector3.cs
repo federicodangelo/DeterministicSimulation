@@ -1,3 +1,5 @@
+#define USE_OPTIMIZATIONS
+
 using System;
 
 namespace DeterministicSimulation
@@ -46,7 +48,12 @@ namespace DeterministicSimulation
 		{
 			get
 			{
+				#if USE_OPTIMIZATIONS
+				long temp = (((long) x.raw) * ((long) x.raw) + ((long) y.raw) * ((long) y.raw) + ((long) z.raw) * ((long) z.raw)) >> fint.SHIFT_AMOUNT;
+				return FMath.Sqrt(fint.CreateRaw((int) temp));
+				#else
 				return FMath.Sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+				#endif
 			}
 		}
 		
@@ -62,7 +69,12 @@ namespace DeterministicSimulation
 		{
 			get
 			{
+				#if USE_OPTIMIZATIONS
+				long temp = (((long) x.raw) * ((long) x.raw) + ((long) y.raw) * ((long) y.raw) + ((long) z.raw) * ((long) z.raw)) >> fint.SHIFT_AMOUNT;
+				return fint.CreateRaw((int) temp);
+				#else
 				return this.x * this.x + this.y * this.y + this.z * this.z;
+				#endif
 			}
 		}
 		
@@ -114,7 +126,12 @@ namespace DeterministicSimulation
 		
 		public static fint Magnitude(FVector3 a)
 		{
+			#if USE_OPTIMIZATIONS
+			long temp = (((long) a.x.raw) * ((long) a.x.raw) + ((long) a.y.raw) * ((long) a.y.raw) + ((long) a.z.raw) * ((long) a.z.raw)) >> fint.SHIFT_AMOUNT;
+			return FMath.Sqrt(fint.CreateRaw((int) temp));
+			#else
 			return FMath.Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+			#endif
 		}
 		
 		public static FVector3 Max(FVector3 lhs, FVector3 rhs)
@@ -170,7 +187,12 @@ namespace DeterministicSimulation
 		
 		public static fint SqrMagnitude(FVector3 a)
 		{
+			#if USE_OPTIMIZATIONS
+			long temp = (((long) a.x.raw) * ((long) a.x.raw) + ((long) a.y.raw) * ((long) a.y.raw) + ((long) a.z.raw) * ((long) a.z.raw)) >> fint.SHIFT_AMOUNT;
+			return fint.CreateRaw((int) temp);
+			#else
 			return a.x * a.x + a.y * a.y + a.z * a.z;
+			#endif
 		}
 		
 		//
@@ -264,8 +286,7 @@ namespace DeterministicSimulation
 		public static FVector3 operator -(FVector3 a)
 		{
 			return new FVector3(-a.x, -a.y, -a.z);
-		}		
-
+		}
 	}
 }
 

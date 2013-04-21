@@ -1,3 +1,5 @@
+#define USE_OPTIMIZATIONS
+
 using System;
 
 namespace DeterministicSimulation
@@ -26,35 +28,38 @@ namespace DeterministicSimulation
 			if ( f.raw == 0 )
 				return fint.zero;
 
+			#if USE_OPTIMIZATIONS
 			long fraw = f.raw;
 			long frawshift = (fraw << fint.SHIFT_AMOUNT);
 			long k = fraw + fint.one.raw >> 1;
-
+			
 			for ( int i = 0; i < NumberOfIterations; i++ )
 				k = (k + (frawshift / k) ) >> 1;
+
 			if ( k < 0 )
 				throw new ArithmeticException( "Overflow" );
 
 			return fint.CreateRaw((int) k);
-
-			//fint k = f + fint.one >> 1;
-			//for ( int i = 0; i < NumberOfIterations; i++ )
-			//	k = ( k + ( f / k ) ) >> 1;
+			#else
+			fint k = f + fint.one >> 1;
+			for ( int i = 0; i < NumberOfIterations; i++ )
+				k = ( k + ( f / k ) ) >> 1;
 			
-			//if ( k.raw < 0 )
-			//	throw new ArithmeticException( "Overflow" );
-			//else
-			//	return k;
+			if ( k.raw < 0 )
+				throw new ArithmeticException( "Overflow" );
+
+			return k;
+			#endif
 		}
 		
 		public static fint Sqrt( fint f )
 		{
-			byte numberOfIterations = 8;
-			if ( f.raw > 0x64000 )
-				numberOfIterations = 12;
 			if ( f.raw > 0x3e8000 )
-				numberOfIterations = 16;
-			return Sqrt( f, numberOfIterations );
+				return Sqrt( f, 16 * 3 / 4 );
+			else if ( f.raw > 0x64000 )
+				return Sqrt( f, 12 * 2 / 3);
+			else
+				return Sqrt( f, 8 * 2 / 3);
 		}
 
 		#endregion

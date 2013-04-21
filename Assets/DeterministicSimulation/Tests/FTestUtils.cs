@@ -14,6 +14,8 @@ namespace DeterministicSimulation
 
 				TestFIntFloating();
 
+				TestSqrt();
+
 				TestTrigonometric();
 
 				TestFVector2();
@@ -85,6 +87,27 @@ namespace DeterministicSimulation
 			//Test division
 			AssertEquals(twoPointTwo / twoPointTwo, 1.0f);
 			AssertAlmostEquals(twoPointTwo / (twoPointTwo * fint.CreateFromFloat(2.0f)), 0.5f);
+		}
+
+		static public void TestSqrt()
+		{
+			//Basic tests
+			AssertEquals(FMath.Sqrt(fint.CreateFromInt(0)), 0.0f);
+			AssertEquals(FMath.Sqrt(fint.CreateFromInt(1)), 1.0f);
+			AssertEquals(FMath.Sqrt(fint.CreateFromInt(4)), 2.0f);
+			AssertAlmostEquals(FMath.Sqrt(fint.CreateFromInt(2)), 1.41421356237f);
+
+			//Iterative test
+			for (float f = 0; f < 1; f += 0.001f)
+				AssertAlmostEquals(FMath.Sqrt(fint.CreateFromFloat(f)), (float) Math.Sqrt(f));
+
+			for (float f = 0; f < 100; f += 0.1f)
+				AssertAlmostEquals(FMath.Sqrt(fint.CreateFromFloat(f)), (float) Math.Sqrt(f));
+
+			for (float f = 0; f < 100000; f += 100.0f)
+				AssertAlmostEquals(FMath.Sqrt(fint.CreateFromFloat(f)), (float) Math.Sqrt(f));
+
+
 		}
 
 		static public void TestTrigonometric()

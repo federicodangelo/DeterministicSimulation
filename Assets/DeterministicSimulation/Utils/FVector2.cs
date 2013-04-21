@@ -1,3 +1,5 @@
+#define USE_OPTIMIZATIONS
+
 using System;
 
 namespace DeterministicSimulation
@@ -36,7 +38,12 @@ namespace DeterministicSimulation
 		{
 			get
 			{
+				#if USE_OPTIMIZATIONS
+				long temp = (((long) x.raw) * ((long) x.raw) + ((long) y.raw) * ((long) y.raw)) >> fint.SHIFT_AMOUNT;
+				return FMath.Sqrt(fint.CreateRaw((int) temp));
+				#else
 				return FMath.Sqrt(this.x * this.x + this.y * this.y);
+				#endif
 			}
 		}
 		
@@ -52,7 +59,12 @@ namespace DeterministicSimulation
 		{
 			get
 			{
+				#if USE_OPTIMIZATIONS
+				long temp = (((long) x.raw) * ((long) x.raw) + ((long) y.raw) * ((long) y.raw)) >> fint.SHIFT_AMOUNT;
+				return fint.CreateRaw((int) temp);
+				#else
 				return this.x * this.x + this.y * this.y;
+				#endif
 			}
 		}
 		
@@ -91,7 +103,12 @@ namespace DeterministicSimulation
 		
 		public static fint Magnitude(FVector2 a)
 		{
+			#if USE_OPTIMIZATIONS
+			long temp = (((long) a.x.raw) * ((long) a.x.raw) + ((long) a.y.raw) * ((long) a.y.raw)) >> fint.SHIFT_AMOUNT;
+			return FMath.Sqrt(fint.CreateRaw((int) temp));
+			#else
 			return FMath.Sqrt(a.x * a.x + a.y * a.y);
+			#endif
 		}
 
 		public static FVector2 Max(FVector2 lhs, FVector2 rhs)
