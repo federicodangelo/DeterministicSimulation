@@ -244,6 +244,11 @@ namespace DeterministicSimulation
 		{
 			return string.Format("({0}, {1}, {2})", this.x.ToFloat(), this.y.ToFloat(), this.z.ToFloat());
 		}
+
+		public UnityEngine.Vector3 ToVector3()
+		{
+			return new UnityEngine.Vector3(x.ToFloat(), y.ToFloat(), z.ToFloat());
+		}
 		
 		//
 		// Operators

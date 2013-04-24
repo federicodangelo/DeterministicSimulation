@@ -19,8 +19,13 @@ namespace DeterministicSimulation
 		
 		private const long rawOne = 1 << SHIFT_AMOUNT;
 
-		public static fint one = fint.CreateFromInt( 1 );
 		public static fint zero = fint.CreateFromInt( 0 );
+
+		public static fint one = fint.CreateFromInt( 1 );
+		public static fint two = fint.CreateFromInt( 2 );
+
+		public static fint half = fint.CreateFromInt( 1 ) / fint.CreateFromInt( 2 );
+		public static fint quarter = fint.CreateFromInt( 1 ) / fint.CreateFromInt( 4 );
 
 		#region Constructors
 

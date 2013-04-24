@@ -8,7 +8,7 @@ public class VoxelWorldView : MonoBehaviour
 
 	private Mesh mesh;
 	private MeshFilter meshFilter;
-	private MeshRenderer meshRenderer;
+	//private MeshRenderer meshRenderer;
 	private MeshCollider meshCollider;
 
 	protected List<int> triangleCubeMap = new List<int>(); //triangleCubeMap[triangleIndex] = z * (sizeX * sizeY) + y * (sizeX) + x (index into data array!)
@@ -17,7 +17,7 @@ public class VoxelWorldView : MonoBehaviour
 	public void Awake () 
 	{
 		meshFilter = GetComponent<MeshFilter>();
-		meshRenderer = GetComponent<MeshRenderer>();
+		//meshRenderer = GetComponent<MeshRenderer>();
 		meshCollider = GetComponent<MeshCollider>();
 		
 		mesh = new Mesh();
@@ -53,14 +53,14 @@ public class VoxelWorldView : MonoBehaviour
 		triangleCubeMap.Clear();
 		triangleCubeFaceNumber.Clear();
 
-		int sizeX = voxelWorld.SizeX;
-		int sizeY = voxelWorld.SizeY;
-		int sizeZ = voxelWorld.SizeZ;
+		int sizeX = voxelWorld.Size.x;
+		int sizeY = voxelWorld.Size.y;
+		int sizeZ = voxelWorld.Size.z;
 
 		int index = 0;
 		int dataOffset = 0;
 		
-		Vector3 cubeCenter = MeshUtils.GetCubeCenter(sizeX, sizeY, sizeZ);
+		Vector3 cubeCenter = -Vector3.one * MeshUtils.HALF_VOXEL_SIZE;
 		
 		for (int z = 0; z < sizeZ; z++)
 		{
@@ -163,7 +163,7 @@ public class VoxelWorldView : MonoBehaviour
 		{
 			Gizmos.matrix = transform.localToWorldMatrix;
 			
-			Gizmos.DrawWireCube(Vector3.zero, new Vector3(voxelWorld.SizeX * MeshUtils.VOXEL_SIZE, voxelWorld.SizeY * MeshUtils.VOXEL_SIZE, voxelWorld.SizeZ * MeshUtils.VOXEL_SIZE));
+			Gizmos.DrawWireCube(voxelWorld.Size.ToVector3() * MeshUtils.VOXEL_SIZE * 0.5f, voxelWorld.Size.ToVector3() * MeshUtils.VOXEL_SIZE);
 		}
 	}
 }
