@@ -2,26 +2,24 @@ using UnityEngine;
 using System.Collections;
 using DeterministicSimulation;
 
-public class TestRunner : MonoBehaviour 
+public class BenchmarkRunner : MonoBehaviour 
 {
-	string benchmarkResult = "";
+	private string benchmarkResult = "";
 
-
-
-	// Use this for initialization
 	void Start () 
 	{
-		FTestUtils.Test();
-
 		benchmarkResult = FTestBenchmark.Benchmark();
+
+		Debug.Log(benchmarkResult);
 	}
-	
-	// Update is called once per frame
+
+	/*
 	void OnGUI () 
 	{
 		GUI.Label(new Rect(10, 10, 1000, 50), benchmarkResult);
-
+		
 		if (GUI.Button(new Rect(10, 70, 100, 100), "RUN"))
 			benchmarkResult = FTestBenchmark.Benchmark();
 	}
+	*/
 }
