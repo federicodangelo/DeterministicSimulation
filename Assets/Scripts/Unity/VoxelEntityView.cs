@@ -77,7 +77,7 @@ public class VoxelEntityView : MonoBehaviour
 		{
 			if (voxelEntity.position.ToVector3() != nextPosition)
 			{
-				trans.position = nextPosition;
+				trans.localPosition = nextPosition;
 
 				lastPosition = nextPosition;
 				nextPosition = voxelEntity.position.ToVector3();
@@ -91,7 +91,7 @@ public class VoxelEntityView : MonoBehaviour
 				if (lastPositionTimeDelta > lastPositionTime)
 					lastPositionTimeDelta = lastPositionTime;
 
-				trans.position = Vector3.Lerp(lastPosition, nextPosition, lastPositionTimeDelta / lastPositionTime);
+				trans.localPosition = Vector3.Lerp(lastPosition, nextPosition, lastPositionTimeDelta / lastPositionTime);
 			}
 		}
 	}
