@@ -8,7 +8,7 @@ public class BenchmarkRunner : MonoBehaviour
 
 	void Start () 
 	{
-		benchmarkResult = FTestBenchmark.Benchmark();
+		benchmarkResult = FTestBenchmark.Benchmark(1000000);
 
 		Debug.Log(benchmarkResult);
 	}
