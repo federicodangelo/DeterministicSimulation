@@ -250,6 +250,11 @@ namespace DeterministicSimulation
 			return new UnityEngine.Vector3(x.ToFloat(), y.ToFloat(), z.ToFloat());
 		}
 		
+		public IntVector3 ToIntVector3()
+		{
+			return new IntVector3(x.ToInt(), y.ToInt(), z.ToInt());
+		}
+
 		//
 		// Operators
 		//

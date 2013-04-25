@@ -5,16 +5,22 @@ using System.Collections.Generic;
 
 namespace DeterministicSimulation
 {
-	public class VoxelWorld : SimulationComponentTemplate<VoxelEntity>
+	public class VoxelWorld : SimulationComponentManagerTemplate<VoxelComponent>
 	{
 		public const string PARAMETER_WORLD_SIZE = "worldSize";
 
 		private IntVector3 size;
 		private byte[] voxels;
+		private DeterministicRandom random;
 
 		public IntVector3 Size
 		{
 			get { return size; }
+		}
+
+		protected override void OnInitDependencies ()
+		{
+			random = simulation.GetComponentManager<DeterministicRandom>();
 		}
 
 		protected override void OnInit ()
@@ -33,11 +39,15 @@ namespace DeterministicSimulation
 				for (int z = 0; z < size.z; z++)
 					SetVoxel(x, 0, z, 1);
 
-			//Create "second floor"
-			for (int x = 5; x < size.x - 5; x++)
-				for (int z = 5; z < size.z - 5; z++)
-					SetVoxel(x, 1, z, 2);
-
+			//Create "obstacles" on second floor
+			for (int i = 0; i < (size.x * size.y) / 2; i++)
+			{
+				SetVoxel(
+					random.Range(0, size.x),
+					1,
+					random.Range(0, size.z),
+					2);
+			}
 		}
 
 		public bool IsValidPosition(int x, int y, int z)
@@ -76,32 +86,32 @@ namespace DeterministicSimulation
 			voxels[x + y * (size.x) + z * (size.x * size.y)] = voxel;
 		}
 
-		protected override void OnUpdate ()
+		protected override void OnUpdateComponents(List<VoxelComponent> components)
 		{
-			for (int i = 0; i < entities.Count; i++)
+			for (int i = 0; i < components.Count; i++)
 			{
-				VoxelEntity entity = entities[i];
+				VoxelComponent voxel = components[i];
 
-				MoveAboveFloor(entity);
+				MoveAboveFloor(voxel);
 
-				if (entity.useGravity)
-					entity.position.y -= fint.CreateFromInt(10) * SimulationTime.deltaTime;
+				if (voxel.useGravity)
+					voxel.position.y -= fint.CreateFromInt(10) * SimulationTime.deltaTime;
 
-				MoveAboveFloor(entity);
+				MoveAboveFloor(voxel);
 			}
 		}
 
-		private void MoveAboveFloor(VoxelEntity entity)
+		private void MoveAboveFloor(VoxelComponent voxel)
 		{
-			FVector3 position = entity.position;
-			fint radius = entity.radius;
+			FVector3 position = voxel.position;
+			fint radius = voxel.radius;
 			
 			FVector3 deltaBottom;
 			
-			if (entity.shape == VoxelEntityShape.Sphere)
+			if (voxel.shape == VoxelShape.Sphere)
 				deltaBottom = FVector3.down * radius;
 			else 
-				deltaBottom = FVector3.down * entity.height * fint.half;
+				deltaBottom = FVector3.down * voxel.height * fint.half;
 			
 			FVector3 bottom = position + deltaBottom;
 			
@@ -115,7 +125,7 @@ namespace DeterministicSimulation
 				{
 					position.y = fint.CreateFromInt(y + 1);
 					
-					entity.position.y = position.y - deltaBottom.y;
+					voxel.position.y = position.y - deltaBottom.y;
 				}
 			}
 		}

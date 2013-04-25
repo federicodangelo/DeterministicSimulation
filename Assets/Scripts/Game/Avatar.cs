@@ -1,37 +1,33 @@
 using System;
 using DeterministicSimulation;
 
-public class Avatar : VoxelEntity
+public class Avatar : SimulationBehavior
 {
-	private FVector3 randomTarget;
 	private DeterministicRandom random;
+	private VoxelPathWalker pathWalker;
+	private VoxelWorld world;
 
-	protected override void OnInit ()
+	protected override void OnInit (Parameters parameters)
 	{
-		base.OnInit ();
-
-		random = simulation.GetComponent<DeterministicRandom>();
-
-		SelectTarget();
+		random = Entity.Simulation.GetComponentManager<DeterministicRandom>();
+		pathWalker = Entity.GetComponent<VoxelPathWalker>();
+		world = Entity.Simulation.GetComponentManager<VoxelWorld>();
 	}
 
 	protected override void OnUpdate ()
 	{
-		randomTarget.y = position.y;
-
-		position = FVector3.MoveTowards(position, randomTarget, SimulationTime.deltaTime * fint.CreateFromInt(10));
-
-		if (position == randomTarget)
-			SelectTarget();
+		if (!pathWalker.Walking)
+		{
+			pathWalker.WalkTo(
+				new FVector3(
+					random.Range(fint.zero, fint.CreateFromInt(world.Size.x)),
+					fint.one,
+		             random.Range(fint.zero, fint.CreateFromInt(world.Size.z))
+				)
+			);
+		}
 	}
 
-	private void SelectTarget()
-	{
-		randomTarget = 
-			new FVector3(voxelWorld.Size.ToFVector3().x * random.Value,
-			             position.y,
-			             voxelWorld.Size.ToFVector3().z * random.Value);
-	}
 }
 
 

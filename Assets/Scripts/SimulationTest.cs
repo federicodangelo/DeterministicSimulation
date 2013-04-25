@@ -17,43 +17,63 @@ public class SimulationTest : MonoBehaviour, ISimulationListener
 	{
 		simulation = new Simulation();
 
-		VoxelWorld world = simulation.AddComponent<VoxelWorld>();
-		simulation.AddComponent<DeterministicRandom>();
+		simulation.AddComponentManager<DeterministicRandom>();
+		simulation.AddComponentManager<SimulationBehaviorManager>();
+		simulation.AddComponentManager<VoxelPathFinder>();
+		simulation.AddComponentManager<VoxelWorld>();
 
+		InitSimulation();
+	}
+
+	private void InitSimulation()
+	{
 		simulation.AddParameter(VoxelWorld.PARAMETER_WORLD_SIZE, new IntVector3(sizeX, sizeY, sizeZ));
 		simulation.AddParameter(Simulation.PARAMETER_STEPS_PER_SECOND, 20);
 		simulation.AddParameter(Simulation.PARAMETER_SIMULATION_LISTENER, this);
-
+		
 		simulation.Init();
+		
+		voxelView.Init(simulation.GetComponentManager<VoxelWorld>());
 
-		voxelView.Init(world);
+		EntityTemplate template1 = new EntityTemplate();
 
-		for (int i = 0; i < 20; i++)
+		template1.AddComponent<VoxelComponent>()
+			.AddParameter(VoxelComponent.PARAMETER_SHAPE, VoxelShape.Sphere)
+			.AddParameter(VoxelComponent.PARAMETER_RADIUS, fint.quarter)
+			.AddParameter(VoxelComponent.PARAMETER_COLOR, new FVector3(fint.one, fint.zero, fint.zero))
+			.AddParameter(VoxelComponent.PARAMETER_POSITION, FVector3.one + FVector3.up * fint.half + FVector3.forward);
+
+		template1.AddComponent<VoxelPathWalker>();
+		template1.AddComponent<Avatar>();
+
+		EntityTemplate template2 = new EntityTemplate();
+
+		template2.AddComponent<VoxelComponent>()
+			.AddParameter(VoxelComponent.PARAMETER_SHAPE, VoxelShape.Cylinder)
+			.AddParameter(VoxelComponent.PARAMETER_RADIUS, fint.quarter)
+			.AddParameter(VoxelComponent.PARAMETER_HEIGHT, fint.one)
+			.AddParameter(VoxelComponent.PARAMETER_COLOR, new FVector3(fint.zero, fint.one, fint.zero))
+			.AddParameter(VoxelComponent.PARAMETER_POSITION, FVector3.one + FVector3.up * fint.half);
+
+		template2.AddComponent<AvatarMoveRandom>();
+
+		for (int i = 0; i < 100; i++)
 		{
-			simulation.AddEntity<Avatar>(new Parameters()
-			                                      .AddParameter(VoxelEntity.PARAMETER_SHAPE, VoxelEntityShape.Sphere)
-			                                  	  .AddParameter(VoxelEntity.PARAMETER_RADIUS, fint.quarter)
-			                                      .AddParameter(VoxelEntity.PARAMETER_COLOR, new FVector3(fint.one, fint.zero, fint.zero))
-				                                  .AddParameter(VoxelEntity.PARAMETER_POSITION, FVector3.one + FVector3.up * fint.half + FVector3.right));
+			simulation.AddEntity(template1);
 
-			simulation.AddEntity<Avatar>(new Parameters()
-			                                      .AddParameter(VoxelEntity.PARAMETER_SHAPE, VoxelEntityShape.Cylinder)
-			                                  	  .AddParameter(VoxelEntity.PARAMETER_RADIUS, fint.quarter)
-				                                  .AddParameter(VoxelEntity.PARAMETER_HEIGHT, fint.one)
-			                                  	  .AddParameter(VoxelEntity.PARAMETER_COLOR, new FVector3(fint.zero, fint.one, fint.zero))
-			                                 	  .AddParameter(VoxelEntity.PARAMETER_POSITION, FVector3.one + FVector3.up * fint.half));
+			simulation.AddEntity(template2);
 		}
 	}
 
 	public void EntityAdded (SimulationEntity entity)
 	{
-		if (entity is VoxelEntity)
+		if (entity.GetComponent<VoxelComponent>() != null)
 		{
 			GameObject go = new GameObject();
 			go.transform.parent = voxelView.transform;
 			VoxelEntityView voxelEntityView = go.AddComponent<VoxelEntityView>();
 
-			voxelEntityView.Init((VoxelEntity) entity);
+			voxelEntityView.Init(entity.GetComponent<VoxelComponent>());
 
 			voxelEntityViews.Add(entity.Id, voxelEntityView);
 		}
@@ -61,7 +81,7 @@ public class SimulationTest : MonoBehaviour, ISimulationListener
 	
 	public void EntityRemoved (SimulationEntity entity)
 	{
-		if (entity is VoxelEntity)
+		if (entity.GetComponent<VoxelComponent>() != null)
 		{
 			VoxelEntityView voxelEntityView = voxelEntityViews[entity.Id];
 
@@ -74,5 +94,12 @@ public class SimulationTest : MonoBehaviour, ISimulationListener
 	public void Update()
 	{
 		simulation.Update(fint.CreateFromFloat(Time.deltaTime));
+
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			simulation.Reset();
+
+			InitSimulation();
+		}
 	}
 }

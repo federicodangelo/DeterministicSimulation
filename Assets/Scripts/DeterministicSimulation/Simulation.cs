@@ -10,60 +10,51 @@ namespace DeterministicSimulation
 
 		private bool initialized;
 
-		private List<SimulationComponent> components = new List<SimulationComponent>();
+		private List<SimulationComponentManager> componentManagers = new List<SimulationComponentManager>();
 		private List<SimulationEntity> entities = new List<SimulationEntity>();
-		private List<SimulationEntity> entitiesToAdd = new List<SimulationEntity>();
-		private List<SimulationEntity> entitiesToRemove = new List<SimulationEntity>();
 
 		private Parameters parameters = new Parameters();
 
-		private bool updating;
 		private int nextEntityId;
 
 		private int stepsPerSecond;
 		private ISimulationListener simulationListener;
 
-		public T AddComponent<T>() where T : SimulationComponent, new()
+		public T AddComponentManager<T>() where T : SimulationComponentManager, new()
 		{
 			if (initialized)
 				throw new InvalidOperationException("Can't add components after the simulation has been initialized");
 
 			T component = new T();
 
-			components.Add(component);
+			componentManagers.Add(component);
 
 			return component;
 		}
 
-		public T GetComponent<T>() where T : SimulationComponent
+		public T GetComponentManager<T>() where T : SimulationComponentManager
 		{
-			for (int i = 0; i < components.Count; i++)
-				if (components[i] is T)
-					return (T) components[i];
+			for (int i = 0; i < componentManagers.Count; i++)
+				if (componentManagers[i] is T)
+					return (T) componentManagers[i];
 
 			return null;
 		}
 
-		public T AddEntity<T>(Parameters parameters) where T : SimulationEntity, new()
+		public SimulationEntity AddEntity(EntityTemplate template)
 		{
 			if (!initialized)
 				throw new InvalidOperationException("Can't add entities to simulations that haven't been initialized");
 			
-			T entity = new T();
+			SimulationEntity entity = new SimulationEntity();
 			
-			if (!updating)
-			{
-				entities.Add(entity);
-			}
-			else
-			{
-				entitiesToAdd.Add(entity);
-			}
+			entities.Add(entity);
 
-			entity.Init(this, parameters, nextEntityId++);
+			entity.Init(this, nextEntityId++, template);
 
-			for (int i = 0; i < components.Count; i++)
-				components[i].EntityAdded(entity);
+			for (int i = 0; i < entity.components.Count; i++)
+				for (int j = 0; j < componentManagers.Count; j++)
+					componentManagers[j].ComponentAdded(entity.components[i]);
 
 			if (simulationListener != null)
 				simulationListener.EntityAdded(entity);
@@ -71,7 +62,7 @@ namespace DeterministicSimulation
 			return entity;
 		}
 
-		public void RemoveEntity(SimulationEntity entity)
+		public void DestroyEntity(SimulationEntity entity)
 		{
 			if (!initialized)
 				throw new InvalidOperationException("Can't remove entities from simulations that haven't been initialized");
@@ -79,24 +70,16 @@ namespace DeterministicSimulation
 			if (entity.Destroyed)
 				throw new InvalidOperationException("Can't remove a destroyed entity");
 
-			entity.Reset();
-
-			for (int i = 0; i < components.Count; i++)
-				components[i].EntityRemoved(entity);
-
-			if (!updating)
-			{
-				entities.Remove(entity);
-			}
-			else
-			{
-				entitiesToAdd.Remove(entity);
-
-				entitiesToRemove.Add(entity);
-			}
-
 			if (simulationListener != null)
 				simulationListener.EntityRemoved(entity);
+
+			for (int i = 0; i < entity.components.Count; i++)
+				for (int j = 0; j < componentManagers.Count; j++)
+					componentManagers[j].ComponentRemoved(entity.components[i]);
+
+			entity.Destroy();
+
+			entities.Remove(entity);
 		}
 
 		public void AddParameter<T>(string id, T value)
@@ -122,8 +105,11 @@ namespace DeterministicSimulation
 				SimulationTime.simulationTime = fint.zero;
 				SimulationTime.deltaTime = fint.one / fint.CreateFromInt(stepsPerSecond);
 
-				for (int i = 0; i < components.Count; i++)
-					components[i].Init(this);
+				for (int i = 0; i < componentManagers.Count; i++)
+					componentManagers[i].InitDependencies(this);
+
+				for (int i = 0; i < componentManagers.Count; i++)
+					componentManagers[i].Init();
 
 				initialized = true;
 			}
@@ -133,14 +119,14 @@ namespace DeterministicSimulation
 		{
 			if (initialized)
 			{
-				//Remove / reset entities
+				//Destroy entities
 				while(entities.Count > 0)
-					RemoveEntity(entities[entities.Count - 1]);
+					DestroyEntity(entities[entities.Count - 1]);
 				nextEntityId = 0;
 
 				//Reset components
-				for (int i = 0; i < components.Count; i++)
-					components[i].Reset();
+				for (int i = 0; i < componentManagers.Count; i++)
+					componentManagers[i].Reset();
 
 				//Reset parameters
 				parameters.Clear();
@@ -164,31 +150,9 @@ namespace DeterministicSimulation
 			{
 				accumulatedTime -= SimulationTime.deltaTime;
 
-				updating = true;
-
 				//Updated components
-				for (int i = 0; i < components.Count; i++)
-					components[i].Update();
-
-				//Update entities
-				for (int i = 0; i < entities.Count; i++)
-					entities[i].Update();
-
-				if (entitiesToAdd.Count > 0)
-				{
-					for (int i = 0; i < entitiesToAdd.Count; i++)
-						entities.Add(entitiesToAdd[i]);
-					entitiesToAdd.Clear();
-				}
-
-				if (entitiesToRemove.Count > 0)
-				{
-					for (int i = 0; i < entitiesToRemove.Count; i++)
-						entities.Remove(entitiesToRemove[i]);
-					entitiesToRemove.Clear();
-				}
-
-				updating = false;
+				for (int i = 0; i < componentManagers.Count; i++)
+					componentManagers[i].Update();
 
 				SimulationTime.simulationTime += SimulationTime.deltaTime;
 			}

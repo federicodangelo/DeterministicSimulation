@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class VoxelEntityView : MonoBehaviour
 {
-	private VoxelEntity voxelEntity;
+	private VoxelComponent voxelComponent;
 	private Transform trans;
 
 	private Vector3 lastPosition;
@@ -17,11 +17,11 @@ public class VoxelEntityView : MonoBehaviour
 		trans = transform;
 	}
 
-	public void Init(VoxelEntity voxelEntity)
+	public void Init(VoxelComponent voxelComponent)
 	{
-		this.voxelEntity = voxelEntity;
+		this.voxelComponent = voxelComponent;
 
-		gameObject.name = voxelEntity.GetType().Name.ToString() + "-" + voxelEntity.Id;
+		gameObject.name = voxelComponent.GetType().Name.ToString() + "-" + voxelComponent.Entity.Id;
 
 		UpdateMesh();
 	}
@@ -30,28 +30,28 @@ public class VoxelEntityView : MonoBehaviour
 	{
 		GameObject view = null;
 
-		switch(voxelEntity.shape)
+		switch(voxelComponent.shape)
 		{
-			case VoxelEntityShape.Sphere:
+			case VoxelShape.Sphere:
 				view = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 				view.transform.parent = trans;
 				view.transform.localPosition = Vector3.zero;
 				view.transform.localRotation = Quaternion.identity;
-				view.transform.localScale = Vector3.one * voxelEntity.radius.ToFloat() * 2.0f;
+				view.transform.localScale = Vector3.one * voxelComponent.radius.ToFloat() * 2.0f;
 				break;
 
-			case VoxelEntityShape.Cylinder:
+			case VoxelShape.Cylinder:
 				view = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
 				view.transform.parent = trans;
 				view.transform.localPosition = Vector3.zero;
 				view.transform.localRotation = Quaternion.identity;
-				view.transform.localScale = new Vector3(voxelEntity.radius.ToFloat() * 2.0f, voxelEntity.height.ToFloat() * 0.5f, voxelEntity.radius.ToFloat() * 2.0f);
+				view.transform.localScale = new Vector3(voxelComponent.radius.ToFloat() * 2.0f, voxelComponent.height.ToFloat() * 0.5f, voxelComponent.radius.ToFloat() * 2.0f);
 				break;
 		}
 
 		if (view != null)
 		{
-			Vector3 colorVector3 = voxelEntity.color.ToVector3();
+			Vector3 colorVector3 = voxelComponent.color.ToVector3();
 			view.renderer.material.color = new Color(colorVector3.x, colorVector3.y, colorVector3.z);
 		}
 
@@ -67,7 +67,7 @@ public class VoxelEntityView : MonoBehaviour
 	{
 		if (firstTime)
 		{
-			lastPosition = nextPosition = voxelEntity.position.ToVector3();
+			lastPosition = nextPosition = voxelComponent.position.ToVector3();
 			lastPositionTime = 0.0f;
 			lastPositionTimeDelta = 0.0f;
 
@@ -75,12 +75,12 @@ public class VoxelEntityView : MonoBehaviour
 		}
 		else
 		{
-			if (voxelEntity.position.ToVector3() != nextPosition)
+			if (voxelComponent.position.ToVector3() != nextPosition)
 			{
 				trans.localPosition = nextPosition;
 
 				lastPosition = nextPosition;
-				nextPosition = voxelEntity.position.ToVector3();
+				nextPosition = voxelComponent.position.ToVector3();
 
 				lastPositionTime = SimulationTime.deltaTime.ToFloat();
 				lastPositionTimeDelta = 0.0f;
