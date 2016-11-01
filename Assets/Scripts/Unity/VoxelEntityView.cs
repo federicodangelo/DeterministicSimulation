@@ -52,7 +52,7 @@ public class VoxelEntityView : MonoBehaviour
 		if (view != null)
 		{
 			Vector3 colorVector3 = voxelComponent.color.ToVector3();
-			view.renderer.material.color = new Color(colorVector3.x, colorVector3.y, colorVector3.z);
+			view.GetComponent<Renderer>().material.color = new Color(colorVector3.x, colorVector3.y, colorVector3.z);
 		}
 
 		UpdatePosition(true);
